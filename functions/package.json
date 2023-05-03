@@ -1,0 +1,32 @@
+{
+  "name": "bitacora-backend",
+  "version": "1.0.0",
+  "description": "Backend para la bitacora del proyecto explorax",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "firebase serve --only functions",
+    "start-dev": "firebase emulators:start --only functions",
+    "start-nodemon": "nodemon index.js",
+    "start-local": "node index.js"
+  },
+  "author": "Ludwing Cano",
+  "license": "ISC",
+  "engines": {
+    "node": "18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^14.2.0",
+    "express": "^4.16.4",
+    "firebase-admin": "^11.0.1",
+    "firebase-functions": "^3.22.0",
+    "jsonwebtoken": "^8.4.0",
+    "mongodb": "^3.6.8",
+    "mongoose": "^5.3.16",
+    "nodemon": "^2.0.20",
+    "uuid": "^9.0.0",
+    "validator": "^10.9.0"
+  }
+}
