@@ -1,35 +1,86 @@
-// We will use this file to implement the logic for evaluating conditions
-function evaluate_conditions(conditions, input) {
-    for (const condition of conditions) {
-        switch (condition.fieldType) {
-            case "MODEL":
-                if (input[condition.field] !== condition.value) {
-                    return false;
-                }
-                break;
-            case "CUSTOMER_PROFILE":
-                if (input.customerProfile[condition.field] !== condition.value) {
-                    return false;
-                }
-                break;
-            // Add more cases for other fieldType values as needed
-            default:
-                console.error(`Unknown fieldType ${condition.fieldType}`);
-                return false;
-        }
+function getCorrectValueType(value, valueType) {
+    switch (valueType) {
+        case 'BOOLEAN':
+            return Boolean(value);
+        case 'NUMBER':
+            return Number(value);
+        case 'DATE':
+            return new Date(value);
+        default:
+            return value.toString();
     }
-    return true;
+
 }
 
-// Recursive function to traverse the tree
-function traverse(node, input) {
-    const nodes = [node];
-    if (evaluate_conditions(node.conditions, input)) {
-        (node.nodes || []).forEach((child_node) => {
-            nodes.push(...traverse(child_node, input));
+function getValue(condition, userData) {
+    switch (condition.fieldType) {
+        case 'CUSTOMER_PROFILE':
+            return getCorrectValueType(userData[condition.field], condition.valueType);
+        default:
+            return '1223';
+    }
+}
+
+function evaluate(condition, userData) {
+    let value = getValue(condition, userData);
+    let conditionValue = getCorrectValueType(condition.value, condition.valueType);
+
+    switch (condition.operator) {
+        case "EQUALS":
+        case "==":
+            return conditionValue == value;
+        case "IN":
+        case "in":
+            return value.includes(conditionValue);
+        case "NOT_EQUALS":
+        case "!=":
+            return conditionValue != value;
+        case "GREATER_THAN":
+        case ">":
+            return value > conditionValue;
+        case "LESS_THAN":
+        case "<":
+            return value < conditionValue;
+        case "GREATER_THAN_OR_EQUAL":
+        case ">=":
+            return value >= conditionValue;
+        case "LESS_THAN_OR_EQUAL":
+        case ">=":
+            return value <= conditionValue;
+        default:
+            return false;
+    }
+}
+
+function evaluateConditions(conditionGroups, userData) {
+    let conditionsTrue = false;
+    let resultsGroups = []
+
+    if (conditionGroups && conditionGroups.length == 0) {
+        return false;
+    }
+
+    conditionGroups.forEach(conditionGroup => {
+        let groupTrue = true;
+        conditionGroup.forEach(condition => {
+            let evaluated = evaluate(condition, userData);
+            if (!evaluated) {
+                groupTrue = false;
+                return;
+            }
         });
-    }
-    return nodes;
+        resultsGroups.push(groupTrue);
+    });
+
+    resultsGroups.forEach(result => {
+        if (result) {
+            conditionsTrue = true;
+            return conditionsTrue;
+        }
+    });
+
+
+    return conditionsTrue;
 }
 
-const all_nodes_matching_conditions = traverse(tree, input);
+module.exports = { evaluateConditions }

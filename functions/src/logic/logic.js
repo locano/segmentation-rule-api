@@ -1,55 +1,70 @@
+const { evaluateConditions } = require("./conditions");
+const { getUserSegment } = require("./segments");
 
-function traverse(node, path) {
-    // Check if the node's conditions are true
-    let conditionsTrue = true;
-    for (let condition of node.conditions) {
-        if (!evaluateCondition(condition)) {
-            conditionsTrue = false;
-            break;
+async function startSRE(tree) {
+    let results = {
+        outputs: [],
+        userEvaluated: []
+    }
+    let filterUsers = await getUserSegment(tree);
+    if (filterUsers.length > 0) {
+        await Promise.all(
+            filterUsers.map(async (user, index) => {
+                let userData = user.data;
+                let result = evaluateNode(tree, userData);
+                result.path = ['root', ...result.path]
+                results.outputs.push(result);
+            })
+        );
+        results.userEvaluated = filterUsers.map(user => user.msidn);
+    }
+
+    return results;
+}
+
+function evaluateNode(tree) {
+    let results = {
+        path: [tree.description],
+        outputs: [],
+        apply: false
+    }
+
+    if (tree && tree.nodes && tree.nodes.length == 0) {
+        return results;
+    }
+
+    for (let node of tree.nodes) {
+        if (evaluateConditions(node.conditions)) {
+            results.path.push(node.description);
+            if (node.output) {
+                results.outputs = [...results.outputs, ...evaluateOutput(node.outputs)];
+            }
+            if (node.nodes.length > 0) {
+                let childResult = evaluateNode(node);
+                results.path = [...results.path, ...childResult.path];
+                results.outputs = [...results.outputs, ...childResult.outputs];
+            }
         }
     }
 
-    // If the conditions are true, add the node to the path
-    if (conditionsTrue) {
-        path.push(node.description);
+    return results;
+}
 
-        // If this node is an output node, add the path to the list of paths
-        if (node.output) {
-            paths.push(path.slice());
+function evaluateOutput(outputs) {
+    let results = [];
+
+    if (outputs.length == 0) {
+        return results;
+    }
+
+
+    outputs.forEach(output => {
+        if (evaluateConditions(output.conditions)) {
+            results.push(output);
         }
-    }
+    });
 
-    // Recursively traverse the child nodes
-    for (let child of node.nodes) {
-        traverse(child, path.slice());
-    }
+    return results;
 }
 
-function getValue(condition) {
-    // Implement your code to get the value for a condition based on the field and valueType properties
-    // Here's an example implementation that just returns a hard-coded value for demonstration purposes:
-    return "123";
-}
-
-function evaluateCondition(condition) {
-    // Implement your code to evaluate a condition here
-    // For example, you could use a switch statement to handle different operators and value types
-    // and check if the condition is true based on the values provided in the condition object
-    // Here's an example implementation that handles the '==' and 'in' operators and the 'STRING' and 'DATE' value types:
-    switch (condition.operator) {
-        case "==":
-            return condition.value == getValue(condition);
-        case "in":
-            return getValue(condition).includes(condition.value);
-        default:
-            return false;
-    }
-}
-
-function findMatchingPats(tree) {
-    let paths = [];
-    // Start traversing the tree from the root node
-    traverse(tree.nodes[0], []);
-
-    return paths;
-}
+module.exports = { startSRE };

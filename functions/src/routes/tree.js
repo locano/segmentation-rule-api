@@ -1,6 +1,7 @@
 const express = require("express");
 const SrTree = require("../models/catalogues/srTree");
-const { find_paths, traverse,extractConditions } = require("../logic/paths");
+const { find_paths, traverse, extractConditions } = require("../logic/paths");
+const { startSRE } = require("../logic/logic");
 const router = new express.Router();
 
 
@@ -62,6 +63,16 @@ router.post("/tree/paths", async (req, res) => {
     try {
         let tree = req.body;
         let paths = find_paths(tree);
+        res.status(200).send(paths);
+    } catch (e) {
+        res.status(500).send();
+    }
+})
+
+router.post("/tree/evaluate", async (req, res) => {
+    try {
+        let tree = req.body;
+        let paths = startSRE(tree);
         res.status(200).send(paths);
     } catch (e) {
         res.status(500).send();
