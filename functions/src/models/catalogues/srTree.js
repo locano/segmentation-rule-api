@@ -32,7 +32,10 @@ const srTreeSchema = mongoose.Schema(
     },
     nodes:{
       type: Array
-    }
+    },
+    versions: {
+      type: Array,
+    },
   },
   {
     timestamps: true,

@@ -57,7 +57,7 @@ function evaluateConditions(conditionGroups, userData) {
     let resultsGroups = []
 
     if (conditionGroups && conditionGroups.length == 0) {
-        return false;
+        return true;
     }
 
     conditionGroups.forEach(conditionGroup => {

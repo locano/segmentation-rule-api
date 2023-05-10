@@ -8,9 +8,16 @@ const router = new express.Router();
 
 router.post("/tree", async (req, res) => {
     try {
-        let tree = await SrTree(req.body);
+        let tree = {}
+        if(req.body._id){
+            tree = await  SrTree.findById(req.body._id);
+            tree.set(req.body);
+        }else{
+            tree = await SrTree(req.body);
+        }
         await tree.save();
-        res.status(200).send(tree);
+        let trees = await SrTree.find({});
+        res.status(200).send(trees);
     } catch (e) {
         res.status(500).send();
     }
@@ -72,7 +79,7 @@ router.post("/tree/paths", async (req, res) => {
 router.post("/tree/evaluate", async (req, res) => {
     try {
         let tree = req.body;
-        let paths = startSRE(tree);
+        let paths = await startSRE(tree);
         res.status(200).send(paths);
     } catch (e) {
         res.status(500).send();
