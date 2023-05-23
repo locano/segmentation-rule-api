@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const customerDataSchema = mongoose.Schema(
+const cataloguesSchema = mongoose.Schema(
   {
     key: {
       type: String,
@@ -28,6 +28,6 @@ const customerDataSchema = mongoose.Schema(
   }
 );
 
-const CustomerData = mongoose.model("CustomerData", customerDataSchema);
+const Catalogue = mongoose.model("Catalogue", cataloguesSchema);
 
-module.exports = CustomerData;
+module.exports = Catalogue;

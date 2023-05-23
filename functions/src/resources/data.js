@@ -22,6 +22,14 @@ const operators = [
     {
         "key": "LESS_THAN_OR_EQUAL",
         "value": "<=",
+    },
+    {
+        "key": "BETWEEN",
+        "value": "BETWEEN",
+    },
+    {
+        "key": "IN",
+        "value": "IN",
     }
 ]
 
@@ -51,17 +59,9 @@ const fieldTypes = [
     {
         "key": "CUSTOMER_PROFILE",
         "value": "Customer Profile",
-    },
-    {
-        "key": "MODEL",
-        "value": "Model",
-    }, {
+    },{
         "key": "CONTEXT_VARIABLE",
         "value": "Context Variable",
-    },
-    {
-        "key": "CUSTOM_VARIABLE",
-        "value": "Custom Variable",
     }]
 
 module.exports = { operators, valueTypes, fieldTypes };

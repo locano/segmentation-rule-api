@@ -1,7 +1,7 @@
 const express = require("express");
-const SrTree = require("../models/catalogues/srTree");
+const SrTree = require("../models/userData/srTree");
 const { find_paths, traverse, extractConditions } = require("../logic/paths");
-const { startSRE } = require("../logic/logic");
+const { evaluateSRE } = require("../logic/logic");
 const router = new express.Router();
 
 
@@ -79,7 +79,14 @@ router.post("/tree/paths", async (req, res) => {
 router.post("/tree/evaluate", async (req, res) => {
     try {
         let tree = req.body;
-        let paths = await startSRE(tree);
+        let variables = [
+            {
+                "key": "model_upsell_loyalty",
+                "type": "STRING",
+                "value": "UPSELL"
+            }
+        ]
+        let paths = await evaluateSRE(tree, variables);
         res.status(200).send(paths);
     } catch (e) {
         res.status(500).send();

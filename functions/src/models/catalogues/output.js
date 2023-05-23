@@ -11,6 +11,10 @@ const outputSchema = mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    definition: {
+      type: Array,
+      required: true
     }
   },
   {

@@ -1,6 +1,5 @@
-const User = require("../models/catalogues/user");
-const { evaluateConditions } = require("./conditions");
-
+const User = require("../models/userData/user");
+const Product = require("../models/catalogues/product");
 
 
 function getQuery(condition) {
@@ -8,6 +7,11 @@ function getQuery(condition) {
     if (condition.valueType == "BOOLEAN") {
         condition.value = condition.value == true ? "TRUE" : "FALSE";
     }
+
+    // if (condition.source == "CONTEXT_VARIABLE") {
+    //     condition.value = getContextValue(condition.field);
+    // }
+
 
     switch (condition.operator) {
         case "EQUALS":
@@ -31,6 +35,9 @@ function getQuery(condition) {
         case "LESS_THAN_OR_EQUAL":
         case ">=":
             return `{"data.${condition.field}": {"$lte": "${condition.value}"}}`;
+        case "BETWEEN":
+            let values = condition.value.split(",");
+            return `{"data.${condition.field}": {"$gte": "${values[0]}", "$lte": "${values[1]}"}}`;
         default:
             return `{"data.${condition.field}": "${condition.value}"}`;
     }
@@ -51,4 +58,25 @@ async function getUserSegment(tree) {
     return users;
 }
 
-module.exports = { getUserSegment }
+async function getOutputs(node) {
+    let querys = [] ;
+    node.conditions.forEach(conditionGroup => {
+        let tempQuery = conditionGroup.map(condition => {
+            return getQuery(condition);
+        }).join(",");
+        querys.push(`{"$and": [${tempQuery}]}`);
+    });
+    let query = `{"$or": [${querys.join(",")}]}`;
+
+
+    let objectQuery = JSON.parse(query);    
+    let products = await Product.find(objectQuery); 
+
+    return products;
+}
+
+async function getContextValue(field) {
+    return variables[field];
+}
+
+module.exports = { getUserSegment,getOutputs }

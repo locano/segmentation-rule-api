@@ -1,80 +1,131 @@
 const { evaluateConditions } = require("./conditions");
-const { getUserSegment } = require("./segments");
+const { getUserSegment, getOutputs } = require("./segments");
 
-async function startSRE(tree) {
-    let results = {
-        paths: [],
-        outputs: [],
-        userEvaluated: []
-    }
+
+var userData = {}
+var settings = []
+var metrics = []
+var variables = []
+
+async function evaluateSRE(tree, contextVariables = []) {
+    let results = [];
     let filterUsers = await getUserSegment(tree);
+    settings = tree.settings;
+    metrics = tree.metrics;
+    variables = contextVariables || {};
+
     if (filterUsers.length > 0) {
-        // await Promise.all(
-        // filterUsers.map(async (user, index) => {
-        //     let userData = user.data;
-        //     let result = evaluateNode(tree, userData);
-        //     result.path = ['root', ...result.path]
-        //     results.outputs.push(result);
-        // })
-        let userData = filterUsers[0].data;
-        let result = evaluateNode(tree, userData);
-        results.paths = ['root', ...result.paths]
-        results.outputs = result.outputs;
-        // );
-        results.userEvaluated = filterUsers.map(user => user.msidn);
+        await Promise.all(
+            filterUsers.map(async (userInfo, index) => {
+                // Globbbal data/Context
+                userData = userInfo.data;
+                let result = await evaluateNodes(tree.nodes);
+                let user = userInfo.msidn;
+                let outputs = result.outputs;
+                if (outputs.length > 0) {
+                    let metrics = await getMetrics();
+                    // let outputSettings = await checkSettings(outputs);
+                    results.push({ user, outputs, metrics });
+                }
+                
+            })
+        );
     }
 
     return results;
 }
 
-function evaluateNode(tree, userData) {
+async function evaluateNodes(nodes, exclusive = false) {
     let results = {
         paths: [],
         outputs: []
     }
 
-    if (tree && tree.nodes && tree.nodes.length == 0) {
+    if (nodes && nodes.length == 0) {
         return results;
     }
 
-    for (let node of tree.nodes) {
+    for (let node of nodes) {
+        // Skip disabled nodes
+        if (node.enable == false) { continue; }
+
+        // Evaluate node
         let nodeResult = {
             paths: [],
             outputs: [],
         }
-        if (evaluateConditions(node.conditions, userData)) {
+        if (evaluateConditions(node.conditions, userData, variables)) {
             nodeResult.paths.push(node.description);
+
             if (node.output) {
-                nodeResult.outputs = [...nodeResult.outputs, ...evaluateOutput(node.outputs, userData)];
+                let outputResult = await evaluateOutput(node.outputs);
+                nodeResult.outputs = [...nodeResult.outputs, ...outputResult];
             }
-            if (node.nodes.length > 0) {
-                let childResult = evaluateNode(node, userData);
+            if (node.nodes && node.nodes.length > 0) {
+                let childResult = await evaluateNodes(node.nodes, node.exclusive);
                 nodeResult.paths = [...nodeResult.paths, ...childResult.paths];
                 nodeResult.outputs = [...nodeResult.outputs, ...childResult.outputs];
             }
+
             results.paths.push(nodeResult.paths);
             results.outputs = [...results.outputs, ...nodeResult.outputs];
+
+            if (exclusive) {
+                break;
+            }
         }
     }
 
     return results;
 }
 
-function evaluateOutput(outputs, userData) {
+async function evaluateOutput(outputs) {
     let results = [];
 
     if (outputs.length == 0) {
         return results;
     }
 
+    await Promise.all(
+        outputs.map(async output => {
+            let resultOut = await getOutputs(output)
+            if (resultOut && resultOut.length > 0) {
+                results.push(resultOut);
+            }
+        })
+    );
 
-    outputs.forEach(output => {
-        if (evaluateConditions(output.conditions, userData)) {
-            results.push(output.description);
-        }
-    });
 
     return results;
 }
 
-module.exports = { startSRE };
+async function getMetrics() {
+    let m = [];
+
+    if (!metrics || metrics.length == 0) {
+        return m;
+    }
+
+    await Promise.all(
+        metrics.map(async metric => {
+            let data = {};
+            data[metric.key] = userData[metric.key];
+            m.push(data);
+        })
+    );
+
+    return m;
+}
+
+async function checkSettings() {
+  let s = [
+    {
+        key: "campaigns_per_user",
+        value: 1,
+    }
+  ];  
+    
+    
+}
+
+module.exports = { evaluateSRE };

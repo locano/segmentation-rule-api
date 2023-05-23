@@ -1,3 +1,9 @@
+var userData = {}
+var settings = []
+var metrics = []
+var variables = []
+
+
 function getCorrectValueType(value, valueType) {
     switch (valueType) {
         case 'BOOLEAN':
@@ -12,18 +18,32 @@ function getCorrectValueType(value, valueType) {
 
 }
 
-function getValue(condition, userData) {
-    switch (condition.fieldType) {
+function getValue(fieldType, field, valueType) {
+    switch (fieldType) {
         case 'CUSTOMER_PROFILE':
-            return getCorrectValueType(userData[condition.field], condition.valueType);
+            return getCorrectValueType(userData[field], valueType);
+        case 'CONTEXT_VARIABLE':
+            return getCorrectValueType(variables[field], valueType);
         default:
-            return '1223';
+            return getCorrectValueType(field, valueType);
     }
 }
 
-function evaluate(condition, userData) {
-    let value = getValue(condition, userData);
-    let conditionValue = getCorrectValueType(condition.value, condition.valueType);
+function evaluate(condition) {
+    let conditionValue = 0;
+    let upper = 0;
+    let lower = 0;
+    // Value from fieldType
+    let value = getValue(condition.fieldType, condition.field, condition.valueType);
+
+    // Value from Condition
+    if (condition.operator == 'BETWEEN') {
+        let values = condition.value.split(',');
+        upper = getCorrectValueType(values[1], condition.valueType);
+        lower = getCorrectValueType(values[0], condition.valueType);
+    } else {
+        conditionValue = getValue(condition.source, condition.value, condition.valueType);
+    }
 
     switch (condition.operator) {
         case "EQUALS":
@@ -47,12 +67,17 @@ function evaluate(condition, userData) {
         case "LESS_THAN_OR_EQUAL":
         case ">=":
             return value <= conditionValue;
+        case "BETWEEN":
+            return value >= lower && value <= upper;
         default:
             return false;
     }
 }
 
-function evaluateConditions(conditionGroups, userData) {
+function evaluateConditions(conditionGroups, _userData, _variables) {
+    userData = _userData;
+    variables = _variables;
+
     let conditionsTrue = false;
     let resultsGroups = []
 
@@ -63,7 +88,7 @@ function evaluateConditions(conditionGroups, userData) {
     conditionGroups.forEach(conditionGroup => {
         let groupTrue = true;
         conditionGroup.forEach(condition => {
-            let evaluated = evaluate(condition, userData);
+            let evaluated = evaluate(condition);
             if (!evaluated) {
                 groupTrue = false;
                 return;
