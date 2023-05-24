@@ -45,3 +45,6 @@ app.use(catchAllErrors);
 app.listen(port, () => {
   console.log("Server is up on port " + port);
 });
+
+// Export the Express API
+module.exports = app;
