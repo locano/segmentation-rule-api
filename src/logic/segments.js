@@ -16,7 +16,7 @@ function getQuery(condition) {
     }
 
     if (condition.valueType == "BOOLEAN") {
-        value = value == true ? "TRUE" : "FALSE";
+        value = value == true ? "true" : "false";
     }
 
 
