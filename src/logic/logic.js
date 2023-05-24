@@ -15,21 +15,31 @@ async function evaluateSRE(tree, contextVariables = []) {
     variables = contextVariables || {};
 
     if (filterUsers.length > 0) {
-        await Promise.all(
-            filterUsers.map(async (userInfo, index) => {
-                // Globbbal data/Context
-                userData = userInfo.data;
-                let result = await evaluateNodes(tree.nodes);
-                let user = userInfo.msidn;
-                let outputs = result.outputs;
-                if (outputs.length > 0) {
-                    let metrics = await getMetrics();
-                    // let outputSettings = await checkSettings(outputs);
-                    results.push({ user, outputs, metrics });
-                }
-                
-            })
-        );
+        // await Promise.all(
+        // filterUsers.map(async (userInfo, index) => {
+        //     // Globbbal data/Context
+        //     userData = userInfo.data;
+        //     let result = await evaluateNodes(tree.nodes);
+        //     let user = userInfo.msidn;
+        //     let outputs = result.outputs;
+        //     if (outputs.length > 0) {
+        //         let metrics = await getMetrics();
+        //         // let outputSettings = await checkSettings(outputs);
+        //         results.push({ user, outputs, metrics });
+        //     }
+
+        // })
+
+        userData = filterUsers[0].data;
+        let result = await evaluateNodes(tree.nodes);
+        let user = filterUsers[0].msidn;
+        let outputs = result.outputs;
+        if (outputs.length > 0) {
+            let metrics = await getMetrics();
+            // let outputSettings = await checkSettings(outputs);
+            results.push({ user, outputs, metrics });
+        }
+        // );
     }
 
     return results;
@@ -118,14 +128,14 @@ async function getMetrics() {
 }
 
 async function checkSettings() {
-  let s = [
-    {
-        key: "campaigns_per_user",
-        value: 1,
-    }
-  ];  
-    
-    
+    let s = [
+        {
+            key: "campaigns_per_user",
+            value: 1,
+        }
+    ];
+
+
 }
 
 module.exports = { evaluateSRE };

@@ -65,7 +65,7 @@ function evaluate(condition) {
         case ">=":
             return value >= conditionValue;
         case "LESS_THAN_OR_EQUAL":
-        case ">=":
+        case "<=":
             return value <= conditionValue;
         case "BETWEEN":
             return value >= lower && value <= upper;
@@ -108,4 +108,4 @@ function evaluateConditions(conditionGroups, _userData, _variables) {
     return conditionsTrue;
 }
 
-module.exports = { evaluateConditions }
+module.exports = { evaluateConditions, getValue, getCorrectValueType }
