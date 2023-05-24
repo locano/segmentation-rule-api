@@ -5,10 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "firebase serve --only functions",
-    "start-dev": "firebase emulators:start --only functions",
     "start-nodemon": "nodemon index.js",
-    "start-local": "node index.js"
+    "start": "node index.js"
   },
   "author": "Ludwing Cano",
   "license": "ISC",
