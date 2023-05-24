@@ -1,5 +1,4 @@
-// Connect o Firebase
-// const functions = require("firebase-functions");
+
 // Create Express API
 const express = require("express");
 const cors = require("cors");
@@ -46,6 +45,3 @@ app.use(catchAllErrors);
 app.listen(port, () => {
   console.log("Server is up on port " + port);
 });
-
-
-// exports.app = functions.https.onRequest(app);
