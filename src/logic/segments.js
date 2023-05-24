@@ -50,7 +50,7 @@ function getQuery(condition) {
 }
 
 async function getUserSegment(tree) {
-    let querys = [] ;
+    let querys = [];
     tree.conditions.forEach(conditionGroup => {
         let tempQuery = conditionGroup.map(condition => {
             return getQuery(condition);
@@ -58,25 +58,36 @@ async function getUserSegment(tree) {
         querys.push(`{"$and": [${tempQuery}]}`);
     });
     let query = `{"$or": [${querys.join(",")}]}`;
-    let objectQuery = JSON.parse(query);    
-    let users = await User.find(objectQuery);   
+    let objectQuery = JSON.parse(query);
+    let users = await User.find(objectQuery);
 
     return users;
 }
 
 async function getOutputs(node) {
-    let querys = [] ;
+    let querys = [];
+    let query = '{}';
+    let sortQuerys = [];
+    let sortQuery = '{}';
     node.conditions.forEach(conditionGroup => {
         let tempQuery = conditionGroup.map(condition => {
             return getQuery(condition);
         }).join(",");
         querys.push(`{"$and": [${tempQuery}]}`);
     });
-    let query = `{"$or": [${querys.join(",")}]}`;
 
+    query = `{"$or": [${querys.join(",")}]}`;
+    if (node.sorts && node.sorts.length > 0) {
+        node.sorts.forEach(sort => {
+            let tempQuery = `"data.${sort.field}": ${sort.order == "ASC" ? 1 : -1}`;
+            sortQuerys.push(tempQuery);
+        });
+        sortQuery = `{${sortQuerys.join(",")}}`;
+    }
 
-    let objectQuery = JSON.parse(query);    
-    let products = await Product.find(objectQuery); 
+    let objectQuery = JSON.parse(query);
+    let sortObjectQuery = JSON.parse(sortQuery);
+    let products = await Product.find(objectQuery).sort(sortObjectQuery);
 
     return products;
 }
@@ -85,4 +96,4 @@ async function getContextValue(field) {
     return variables[field];
 }
 
-module.exports = { getUserSegment,getOutputs }
+module.exports = { getUserSegment, getOutputs }
