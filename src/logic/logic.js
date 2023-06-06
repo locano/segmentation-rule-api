@@ -24,7 +24,7 @@ async function evaluateSRE(tree, contextVariables = []) {
             let outputs = result.outputs;
             if (outputs.length > 0) {
                 let metrics = await getMetrics();
-                // let outputSettings = await checkSettings(outputs);
+                let outputSettings = await checkSettings(outputs);
                 results.push({ user, outputs, metrics });
             }
 

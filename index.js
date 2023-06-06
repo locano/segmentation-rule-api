@@ -5,10 +5,11 @@ const cors = require("cors");
 // Connect to MongoDB
 const connectDB = require("./src/db/mongoose");
 
-
 // Adding Routes
 const catalogueRouter = require("./src/routes/catalogue");
 const treeRouter = require("./src/routes/tree");
+const informationRouter = require("./src/routes/information");
+
 // Middlewares
 const send404 = require("./src/middleware/error404");
 const catchAllErrors = require("./src/middleware/catchAllErrors");
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 
 app.use(catalogueRouter);
 app.use(treeRouter);
+app.use(informationRouter);
 app.use(send404);
 app.use(catchAllErrors);
 
@@ -47,4 +49,4 @@ app.listen(port, () => {
 });
 
 // Export the Express API
-module.exports = app;
+// module.exports = app;
