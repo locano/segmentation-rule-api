@@ -23,29 +23,29 @@ function getQuery(condition) {
     switch (condition.operator) {
         case "EQUALS":
         case "==":
-            return `{"data.${condition.field}": "${value}"}`;
+            return `{"${condition.field}": "${value}"}`;
         case "IN":
         case "in":
-            return `{"data.${condition.field}": {"$in": ["${value}"]}}`;
+            return `{"${condition.field}": {"$in": ["${value}"]}}`;
         case "NOT_EQUALS":
         case "!=":
-            return `{"data.${condition.field}": {"$ne": "${value}"}}`;
+            return `{"${condition.field}": {"$ne": "${value}"}}`;
         case "GREATER_THAN":
         case ">":
-            return `{"data.${condition.field}": {"$gt": "${value}"}}`;
+            return `{"${condition.field}": {"$gt": "${value}"}}`;
         case "LESS_THAN":
         case "<":
-            return `{"data.${condition.field}": {"$lt": "${value}"}}`;
+            return `{"${condition.field}": {"$lt": "${value}"}}`;
         case "GREATER_THAN_OR_EQUAL":
         case ">=":
-            return `{"data.${condition.field}": {"$gte": "${value}"}}`;
+            return `{"${condition.field}": {"$gte": "${value}"}}`;
         case "LESS_THAN_OR_EQUAL":
         case "<=":
-            return `{"data.${condition.field}": {"$lte": "${value}"}}`;
+            return `{"${condition.field}": {"$lte": "${value}"}}`;
         case "BETWEEN":
-            return `{"data.${condition.field}": {"$gte": "${lower}", "$lte": "${upper}"}}`;
+            return `{"${condition.field}": {"$gte": "${lower}", "$lte": "${upper}"}}`;
         default:
-            return `{"data.${condition.field}": "${value}"}`;
+            return `{"${condition.field}": "${value}"}`;
     }
 }
 
@@ -60,7 +60,7 @@ async function getUserSegment(tree) {
     let query = `{"$or": [${querys.join(",")}]}`;
     let objectQuery = JSON.parse(query);
     let users = await User.find(objectQuery);
-    let usersFilter = users.filter(user => {return user.data.user_communication_upsell_benefit == 'false'});
+    let usersFilter = users.filter(user => {return user.user_communication_upsell_benefit == 'false'});
     return users;
 }
 
@@ -79,7 +79,7 @@ async function getOutputs(node) {
     query = `{"$or": [${querys.join(",")}]}`;
     if (node.sorts && node.sorts.length > 0) {
         node.sorts.forEach(sort => {
-            let tempQuery = `"data.${sort.field}": ${sort.order == "ASC" ? 1 : -1}`;
+            let tempQuery = `"${sort.field}": ${sort.order == "ASC" ? 1 : -1}`;
             sortQuerys.push(tempQuery);
         });
         sortQuery = `{${sortQuerys.join(",")}}`;
