@@ -20,11 +20,11 @@ async function evaluateSRE(tree, contextVariables = []) {
                 // Globbbal data/Context
                 userData = userInfo.data;
                 let result = await evaluateNodes(tree.nodes);
-                let user = userInfo.msidn;
+                let user = userInfo.msisdn;
                 let outputs = result.outputs;
                 if (outputs.length > 0) {
                     let metrics = await getMetrics();
-                    let outputSettings = await checkSettings(outputs);
+                    let outputSettings = await checkSettings(outputs, settings);
                     results.push({ user, outputSettings, metrics });
                 }
 
@@ -33,7 +33,7 @@ async function evaluateSRE(tree, contextVariables = []) {
 
         // userData = filterUsers[0].data;
         // let result = await evaluateNodes(tree.nodes);
-        // let user = filterUsers[0].msidn;
+        // let user = filterUsers[0].msisdn;
         // let outputs = result.outputs;
         // if (outputs.length > 0) {
         //     let metrics = await getMetrics();
@@ -131,7 +131,7 @@ async function getMetrics() {
 async function checkSettings(outputs, settings) {
 
     if (!settings || settings.length == 0) {
-        return outputs;
+        return outputs[0];
     }
 
     settings.forEach(element => {
@@ -141,8 +141,8 @@ async function checkSettings(outputs, settings) {
                 break;
         }
     });
-
-    return outputs;
+    
+    return outputs[0];
 
 }
 

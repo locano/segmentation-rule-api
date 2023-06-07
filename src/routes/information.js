@@ -105,12 +105,12 @@ router.get("/information/createDefinition", async (req, res) => {
 // Getting Test
 router.get("/information/crearUsuarios", async (req, res) => {
   try {
-    const csvFilePath = 'users_900k.csv';
+    const csvFilePath = 'users_900k_2.csv';
 
     const json = await csvToJson().fromFile(csvFilePath);
 
     await Promise.all(json.slice(0, 1000).map(async (element) => {
-      let user = new User({ "msidn": element.msisdn, "data": element });
+      let user = new User({ "msisdn": element.msisdn, "data": element });
       await user.save();
     })).then((values) => {
       console.log(values);

@@ -60,7 +60,7 @@ async function getUserSegment(tree) {
     let query = `{"$or": [${querys.join(",")}]}`;
     let objectQuery = JSON.parse(query);
     let users = await User.find(objectQuery);
-
+    let usersFilter = users.filter(user => {return user.data.user_communication_upsell_benefit == 'false'});
     return users;
 }
 

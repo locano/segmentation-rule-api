@@ -7,7 +7,14 @@ var variables = []
 function getCorrectValueType(value, valueType) {
     switch (valueType) {
         case 'BOOLEAN':
-            return Boolean(value);
+            let resvalue = true;
+            if (value == 'true' || value == true) {
+                resvalue = true;
+            } else {
+                resvalue = false;
+            }
+
+            return resvalue;
         case 'NUMBER':
             return Number(value);
         case 'DATE':

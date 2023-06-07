@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const usersSchema = mongoose.Schema(
     {
-        msidn: {
+        msisdn: {
             type: String,
             required: true,
             trim: true,
