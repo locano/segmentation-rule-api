@@ -16,19 +16,20 @@ async function evaluateSRE(tree, contextVariables = []) {
 
     if (filterUsers.length > 0) {
         await Promise.all(
-        filterUsers.map(async (userInfo, index) => {
-            // Globbbal data/Context
-            userData = userInfo.data;
-            let result = await evaluateNodes(tree.nodes);
-            let user = userInfo.msidn;
-            let outputs = result.outputs;
-            if (outputs.length > 0) {
-                let metrics = await getMetrics();
-                let outputSettings = await checkSettings(outputs);
-                results.push({ user, outputs, metrics });
-            }
+            filterUsers.map(async (userInfo, index) => {
+                // Globbbal data/Context
+                userData = userInfo.data;
+                let result = await evaluateNodes(tree.nodes);
+                let user = userInfo.msidn;
+                let outputs = result.outputs;
+                if (outputs.length > 0) {
+                    let metrics = await getMetrics();
+                    let outputSettings = await checkSettings(outputs);
+                    results.push({ user, outputSettings, metrics });
+                }
 
-        })
+            })
+        );
 
         // userData = filterUsers[0].data;
         // let result = await evaluateNodes(tree.nodes);
@@ -36,10 +37,10 @@ async function evaluateSRE(tree, contextVariables = []) {
         // let outputs = result.outputs;
         // if (outputs.length > 0) {
         //     let metrics = await getMetrics();
-        //     // let outputSettings = await checkSettings(outputs);
-        //     results.push({ user, outputs, metrics });
+        //     let outputSettings = await checkSettings(outputs, tree.settings);
+        //     results.push({ user, outputSettings, metrics });
         // }
-        );
+
     }
 
     return results;
@@ -127,14 +128,21 @@ async function getMetrics() {
     return m;
 }
 
-async function checkSettings() {
-    let s = [
-        {
-            key: "campaigns_per_user",
-            value: 1,
-        }
-    ];
+async function checkSettings(outputs, settings) {
 
+    if (!settings || settings.length == 0) {
+        return outputs;
+    }
+
+    settings.forEach(element => {
+        switch (element.key) {
+            case "campaigns_per_user":
+                outputs = outputs.slice(0, element.value);
+                break;
+        }
+    });
+
+    return outputs;
 
 }
 

@@ -15,8 +15,8 @@ const Setting = require("../models/catalogues/setting");
 // Getting Outputs
 router.get("/catalogue/outputs", async (req, res) => {
   try {
-    let catalogue = await Catalogue.find({});
-    res.status(200).send(catalogue);
+    let outputs = await Output.find({});
+    res.status(200).send(outputs);
   } catch (e) {
     res.status(500).send();
   }
@@ -25,8 +25,8 @@ router.get("/catalogue/outputs", async (req, res) => {
 // Getting Outputs
 router.get("/catalogue/features", async (req, res) => {
   try {
-    let outputs = await Output.find({});
-    res.status(200).send(outputs);
+    let catalogue = await Catalogue.find({});
+    res.status(200).send(catalogue);
   } catch (e) {
     res.status(500).send();
   }

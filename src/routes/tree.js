@@ -78,14 +78,9 @@ router.post("/tree/paths", async (req, res) => {
 
 router.post("/tree/evaluate", async (req, res) => {
     try {
-        let tree = req.body;
-        let variables = [
-            {
-                "key": "model_upsell_loyalty",
-                "type": "STRING",
-                "value": "UPSELL"
-            }
-        ]
+        let tree = req.body.tree;
+        let variables = req.body.variables;
+
         let paths = await evaluateSRE(tree, variables);
         res.status(200).send(paths);
     } catch (e) {
