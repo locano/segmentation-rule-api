@@ -80,8 +80,9 @@ router.post("/tree/evaluate", async (req, res) => {
     try {
         let tree = req.body.tree;
         let variables = req.body.variables;
+        let testUsers = req.body.testUsers ? Number(req.body.testUsers) : null;
 
-        let paths = await evaluateSRE(tree, variables);
+        let paths = await evaluateSRE(tree, variables, testUsers);
         res.status(200).send(paths);
     } catch (e) {
         res.status(500).send();

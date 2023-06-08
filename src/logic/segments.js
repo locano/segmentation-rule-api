@@ -19,37 +19,37 @@ function getQuery(condition) {
         value = value == true ? "true" : "false";
     }
 
-
+    let queryValue = condition.valueType == "STRING" ? `"${value}"` : value;
     switch (condition.operator) {
         case "EQUALS":
         case "==":
-            return `{"${condition.field}": "${value}"}`;
+            return `{"${condition.field}": ${queryValue}}`;
         case "IN":
         case "in":
-            return `{"${condition.field}": {"$in": ["${value}"]}}`;
+            return `{"${condition.field}": {"$in": [${queryValue}]}}`;
         case "NOT_EQUALS":
         case "!=":
-            return `{"${condition.field}": {"$ne": "${value}"}}`;
+            return `{"${condition.field}": {"$ne": ${queryValue}}}`;
         case "GREATER_THAN":
         case ">":
-            return `{"${condition.field}": {"$gt": "${value}"}}`;
+            return `{"${condition.field}": {"$gt": ${queryValue}}}`;
         case "LESS_THAN":
         case "<":
-            return `{"${condition.field}": {"$lt": "${value}"}}`;
+            return `{"${condition.field}": {"$lt": ${queryValue}}}`;
         case "GREATER_THAN_OR_EQUAL":
         case ">=":
-            return `{"${condition.field}": {"$gte": "${value}"}}`;
+            return `{"${condition.field}": {"$gte": ${queryValue}}}`;
         case "LESS_THAN_OR_EQUAL":
         case "<=":
-            return `{"${condition.field}": {"$lte": "${value}"}}`;
+            return `{"${condition.field}": {"$lte": ${queryValue}}}`;
         case "BETWEEN":
-            return `{"${condition.field}": {"$gte": "${lower}", "$lte": "${upper}"}}`;
+            return `{"${condition.field}": {"$gte": ${lower}, "$lte": ${upper}}}`;
         default:
-            return `{"${condition.field}": "${value}"}`;
+            return `{"${condition.field}": ${queryValue}}`;
     }
 }
 
-async function getUserSegment(tree) {
+async function getUserSegment(tree,testUsers) {
     let querys = [];
     tree.conditions.forEach(conditionGroup => {
         let tempQuery = conditionGroup.map(condition => {
@@ -59,7 +59,7 @@ async function getUserSegment(tree) {
     });
     let query = `{"$or": [${querys.join(",")}]}`;
     let objectQuery = JSON.parse(query);
-    let users = await User.find(objectQuery);
+    let users = await User.find(objectQuery).limit(testUsers);
     let usersFilter = users.filter(user => {return user.user_communication_upsell_benefit == 'false'});
     return users;
 }

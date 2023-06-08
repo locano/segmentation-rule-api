@@ -7,9 +7,9 @@ var settings = []
 var metrics = []
 var variables = []
 
-async function evaluateSRE(tree, contextVariables = []) {
+async function evaluateSRE(tree, contextVariables = [], testUsers = 1000) {
     let results = [];
-    let filterUsers = await getUserSegment(tree);
+    let filterUsers = await getUserSegment(tree, testUsers);
     settings = tree.settings;
     metrics = tree.metrics;
     variables = contextVariables || {};
@@ -141,7 +141,7 @@ async function checkSettings(outputs, settings) {
                 break;
         }
     });
-    
+
     return outputs[0];
 
 }
