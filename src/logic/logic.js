@@ -18,7 +18,7 @@ async function evaluateSRE(tree, contextVariables = [], testUsers = 1000) {
         await Promise.all(
             filterUsers.map(async (userInfo, index) => {
                 // Globbbal data/Context
-                userData = userInfo.data;
+                userData = userInfo._doc;
                 let result = await evaluateNodes(tree.nodes);
                 let user = userInfo.msisdn;
                 let outputs = result.outputs;
@@ -101,7 +101,8 @@ async function evaluateOutput(outputs) {
         outputs.map(async output => {
             let resultOut = await getOutputs(output)
             if (resultOut && resultOut.length > 0) {
-                results.push(resultOut);
+                let dataOutput = resultOut.map(o =>{return o._doc});
+                results.push(dataOutput);
             }
         })
     );
