@@ -2,51 +2,42 @@ const { evaluateConditions } = require("./conditions");
 const { getUserSegment, getOutputs } = require("./segments");
 
 
-var userData = {}
 var settings = []
 var metrics = []
 var variables = []
 
-async function evaluateSRE(tree, contextVariables = [], testUsers = 1000) {
+async function evaluateSRE(tree, contextVariables = {}, limitUsers = null, testUser = null) {
     let results = [];
-    let filterUsers = await getUserSegment(tree, testUsers);
+    let filterUsers = await getUserSegment(tree, limitUsers, testUser);
     settings = tree.settings;
     metrics = tree.metrics;
-    variables = contextVariables || {};
+    variables = JSON.parse(contextVariables) || {};
 
     if (filterUsers.length > 0) {
         await Promise.all(
             filterUsers.map(async (userInfo, index) => {
                 // Globbbal data/Context
-                userData = userInfo._doc;
-                let result = await evaluateNodes(tree.nodes);
+                let userData = userInfo._doc
+                let result = await evaluateNodes(tree.nodes, userData);
                 let user = userInfo.msisdn;
-                let outputs = result.outputs;
-                if (outputs.length > 0) {
-                    let metrics = await getMetrics();
-                    let outputSettings = await checkSettings(outputs, settings);
-                    results.push({ user, outputSettings, metrics });
+                let resultOutputs = result.outputs;
+                let metrics = await getMetrics(userData);
+                if (resultOutputs.length > 0) {
+                    let outputs = await checkSettings(resultOutputs, settings);
+                    results.push({ user, outputs, metrics });
+                } else {
+                    let outputs = [];
+                    results.push({ user, outputs, metrics });
                 }
 
             })
         );
-
-        // userData = filterUsers[0].data;
-        // let result = await evaluateNodes(tree.nodes);
-        // let user = filterUsers[0].msisdn;
-        // let outputs = result.outputs;
-        // if (outputs.length > 0) {
-        //     let metrics = await getMetrics();
-        //     let outputSettings = await checkSettings(outputs, tree.settings);
-        //     results.push({ user, outputSettings, metrics });
-        // }
-
     }
 
     return results;
 }
 
-async function evaluateNodes(nodes, exclusive = false) {
+async function evaluateNodes(nodes, userData, exclusive = false) {
     let results = {
         paths: [],
         outputs: []
@@ -69,11 +60,11 @@ async function evaluateNodes(nodes, exclusive = false) {
             nodeResult.paths.push(node.description);
 
             if (node.output) {
-                let outputResult = await evaluateOutput(node.outputs);
+                let outputResult = await evaluateOutput(node.outputs, userData);
                 nodeResult.outputs = [...nodeResult.outputs, ...outputResult];
             }
             if (node.nodes && node.nodes.length > 0) {
-                let childResult = await evaluateNodes(node.nodes, node.exclusive);
+                let childResult = await evaluateNodes(node.nodes, userData, node.exclusive);
                 nodeResult.paths = [...nodeResult.paths, ...childResult.paths];
                 nodeResult.outputs = [...nodeResult.outputs, ...childResult.outputs];
             }
@@ -90,7 +81,7 @@ async function evaluateNodes(nodes, exclusive = false) {
     return results;
 }
 
-async function evaluateOutput(outputs) {
+async function evaluateOutput(outputs, userData) {
     let results = [];
 
     if (outputs.length == 0) {
@@ -99,19 +90,24 @@ async function evaluateOutput(outputs) {
 
     await Promise.all(
         outputs.map(async output => {
-            let resultOut = await getOutputs(output)
+            let limit = output.limit;
+            let priority = output.priority;
+            let resultOut = await getOutputs(output, limit)
             if (resultOut && resultOut.length > 0) {
-                let dataOutput = resultOut.map(o =>{return o._doc});
-                results.push(dataOutput);
+                let dataOutput = resultOut.map(o => { return o._doc });
+                results.push({ dataOutput, priority });
             }
         })
     );
-
+    // order by priority
+    results.sort((a, b) => (a.priority > b.priority) ? 1 : -1)
+    // remove key priority
+    results = results.map(r => { return r.dataOutput });
 
     return results;
 }
 
-async function getMetrics() {
+async function getMetrics(userData) {
     let m = [];
 
     if (!metrics || metrics.length == 0) {

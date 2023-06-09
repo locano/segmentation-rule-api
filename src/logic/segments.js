@@ -1,6 +1,7 @@
 const User = require("../models/userData/user");
 const Product = require("../models/catalogues/product");
 const { getValue } = require("./conditions");
+const { ObjectId } = require("mongodb");
 
 
 function getQuery(condition) {
@@ -49,7 +50,14 @@ function getQuery(condition) {
     }
 }
 
-async function getUserSegment(tree,testUsers) {
+async function getUserSegment(tree, limitUsers, testUser) {
+
+
+    if (testUser) {
+        let users = await User.find({ "msisdn": testUser });
+        return users;
+    }
+
     let querys = [];
     tree.conditions.forEach(conditionGroup => {
         let tempQuery = conditionGroup.map(condition => {
@@ -59,11 +67,18 @@ async function getUserSegment(tree,testUsers) {
     });
     let query = `{"$or": [${querys.join(",")}]}`;
     let objectQuery = JSON.parse(query);
-    let users = await User.find(objectQuery).limit(testUsers);
+
+    if (limitUsers) {
+        let users = await User.find(objectQuery).limit(limitUsers);
+        return users;
+    }
+
+    let users = await User.find(objectQuery);
     return users;
+
 }
 
-async function getOutputs(node) {
+async function getOutputs(node, limitOutputs) {
     let querys = [];
     let query = '{}';
     let sortQuerys = [];
@@ -86,13 +101,14 @@ async function getOutputs(node) {
 
     let objectQuery = JSON.parse(query);
     let sortObjectQuery = JSON.parse(sortQuery);
-    let products = await Product.find(objectQuery).sort(sortObjectQuery);
+    if (limitOutputs && limitOutputs > 0) {
+        let products = await Product.find(objectQuery).limit(limitOutputs).sort(sortObjectQuery);
+        return products;
+    }
 
+    let products = await Product.find(objectQuery).sort(sortObjectQuery);
     return products;
 }
 
-async function getContextValue(field) {
-    return variables[field];
-}
 
 module.exports = { getUserSegment, getOutputs }

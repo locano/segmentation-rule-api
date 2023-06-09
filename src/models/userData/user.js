@@ -1,15 +1,10 @@
 const mongoose = require("mongoose");
-
+require('mongoose-long')(mongoose);
+const {Types: {Long}} = mongoose;
 const usersSchema = mongoose.Schema(
     {
         msisdn: {
-            type: String,
-            required: true,
-            trim: true,
-
-        },
-        data: {
-            type: Object
+            type: Long
         }
     }
 );

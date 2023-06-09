@@ -80,9 +80,10 @@ router.post("/tree/evaluate", async (req, res) => {
     try {
         let tree = req.body.tree;
         let variables = req.body.variables;
-        let testUsers = req.body.testUsers ? Number(req.body.testUsers) : null;
+        let limitUsers = req.body.limitUsers ? Number(req.body.limitUsers) : null;
+        let testUser = req.body.testUser ? Number(req.body.testUser) : null;
 
-        let paths = await evaluateSRE(tree, variables, testUsers);
+        let paths = await evaluateSRE(tree, variables, limitUsers, testUser);
         res.status(200).send(paths);
     } catch (e) {
         res.status(500).send();
