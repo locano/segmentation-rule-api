@@ -1,6 +1,6 @@
 const { getValue } = require("./conditions");
 
-function getQuery(condition) {
+function getQuery(condition, userData = {}) {
     let upper = 0;
     let lower = 0;
     let value = '';
@@ -9,7 +9,7 @@ function getQuery(condition) {
         upper = getCorrectValueType(values[1], condition.valueType);
         lower = getCorrectValueType(values[0], condition.valueType);
     } else {
-        value = getValue(condition.source, condition.value, condition.valueType);
+        value = getValue(condition.source, condition.value, condition.valueType, userData);
     }
 
     if (condition.valueType == "BOOLEAN") {

@@ -1,14 +1,14 @@
 const Product = require("../models/catalogues/product");
 const { getQuery } = require("./querys");
 
-async function getOutputs(node, limitOutputs) {
+async function getOutputs(node, limitOutputs, userData) {
     let querys = [];
     let query = '{}';
     let sortQuerys = [];
     let sortQuery = '{}';
     node.conditions.forEach(conditionGroup => {
         let tempQuery = conditionGroup.map(condition => {
-            return getQuery(condition);
+            return getQuery(condition, userData);
         }).join(",");
         querys.push(`{"$and": [${tempQuery}]}`);
     });
@@ -30,6 +30,8 @@ async function getOutputs(node, limitOutputs) {
     }
 
     let products = await Product.find(objectQuery).sort(sortObjectQuery);
+    // Random products
+    products = products.sort(() => Math.random() - 0.5);
     return products;
 }
 
@@ -44,7 +46,7 @@ async function evaluateOutput(outputs, userData) {
         outputs.map(async output => {
             let limit = output.limit;
             let priority = output.priority;
-            let resultOut = await getOutputs(output, limit)
+            let resultOut = await getOutputs(output, limit, userData)
             if (resultOut && resultOut.length > 0) {
                 let dataOutput = resultOut.map(o => { return o._doc });
                 results.push({ dataOutput, priority });
@@ -55,6 +57,9 @@ async function evaluateOutput(outputs, userData) {
     results.sort((a, b) => (a.priority > b.priority) ? 1 : -1)
     // remove key priority
     results = results.map(r => { return r.dataOutput });
+
+    // random results
+    results = results.sort(() => Math.random() - 0.5);
 
     return results;
 }
