@@ -2,7 +2,7 @@ const { evaluateConditions } = require("./conditions");
 const { getMetrics } = require("./metrics");
 const { evaluateOutput } = require("./outputs");
 const { checkSettings } = require("./settings");
-
+const AWS = require('aws-sdk');
 
 var settings = []
 var variables = []
@@ -34,7 +34,65 @@ async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
         );
     }
 
-    return results;
+    let dataResult = await getResultData(results);
+
+    return dataResult;
+}
+
+function getMegabitesSize(data) {
+    const jsonString = JSON.stringify(data);
+    const size = new TextEncoder().encode(jsonString).length
+    const kiloBytes = size / 1024;
+    const megaBytes = kiloBytes / 1024;
+    return megaBytes;
+}
+
+async function getResultData(results) {
+    const megaBytes = getMegabitesSize(results);
+
+    try {
+        if (megaBytes > 4) {
+            var s3 = new AWS.S3();
+            let filename = `result_${(new Date().toJSON())}.json`
+            var params = {
+                Bucket: "amplify-segmentationruleapi-dev-165448-deployment/tempData",
+                Key: filename,
+                Body: JSON.stringify(results),
+                Expires: 60 * 60
+            }
+            localParams = [params];
+            await Promise.all(
+                localParams.map(async (file) => {
+                    await s3.putObject(file, function (err, data) {
+                        if (err) console.log(err, err.stack); // an error occurred
+                        else console.log("Put to s3 should have worked: " + data);           // successful response
+                    }).promise()
+                })
+            );
+
+            return {
+                results: results.slice(0, 100),
+                message: "Data size is greater than 4MB and has been saved in S3, you can see a preview in the results",
+                stored: true,
+                link: `https://amplify-segmentationruleapi-dev-165448-deployment.s3.amazonaws.com/tempData/${filename}`
+            }
+        } else {
+            return {
+                results: results,
+                message: "Data size is less than 4MB you can see the results",
+                stored: false
+            };
+        }
+    } catch (error) {
+        return {
+            results: [],
+            message: error.message || "Error saving data in S3",
+            stored: true
+        };
+    }
+
+
+
 }
 
 async function evaluateNodes(nodes, userData, exclusive = false) {

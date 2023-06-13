@@ -15,8 +15,8 @@ router.post("/tree/evaluate", async (req, res) => {
         let testUser = req.body.testUser ? Number(req.body.testUser) : null;
         let userSegment = await getUserSegment(tree.conditions, limitUsers, testUser);
         // Evaluar un segmento de usuarios y extraer outputs
-        let paths = await evaluateSRE(tree, variables, userSegment);
-        res.status(200).send(paths);
+        let results = await evaluateSRE(tree, variables, userSegment);
+        res.status(200).send(results);
     } catch (e) {
         res.status(500).send();
     }
