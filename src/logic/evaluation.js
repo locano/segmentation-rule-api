@@ -10,6 +10,8 @@ var variables = []
 async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
     let results = [];
     settings = tree.settings;
+    // No outputs
+    let no_outputs = settings.find(element => element.key == "no_outputs");
     let treeMetrics = tree.metrics;
     variables = JSON.parse(contextVariables) || {};
 
@@ -26,13 +28,18 @@ async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
                     let outputs = await checkSettings(resultOutputs, settings);
                     results.push({ user, outputs, metrics });
                 } else {
-                    let outputs = [];
-                    results.push({ user, outputs, metrics });
+                    if (no_outputs && no_outputs.value == true) {
+                        let outputs = [];
+                        results.push({ user, outputs, metrics });
+                    }
                 }
 
             })
         );
     }
+
+    //suffle results
+    results.sort(() => Math.random() - 0.5);
 
     let dataResult = await getResultData(results);
 
@@ -63,7 +70,7 @@ async function getResultData(results) {
             localParams = [params];
             await Promise.all(
                 localParams.map(async (file) => {
-                    await s3.putObject(file, function (err, data) {
+                    s3.putObject(file, function (err, data) {
                         if (err) console.log(err, err.stack); // an error occurred
                         else console.log("Put to s3 should have worked: " + data);           // successful response
                     }).promise()
@@ -71,7 +78,7 @@ async function getResultData(results) {
             );
 
             return {
-                results: results.slice(0, 100),
+                results: results.slice(0, 200),
                 message: "Data size is greater than 4MB and has been saved in S3, you can see a preview in the results",
                 stored: true,
                 link: `https://amplify-segmentationruleapi-dev-165448-deployment.s3.amazonaws.com/tempData/${filename}`

@@ -6,10 +6,10 @@ async function checkSettings(outputs, settings) {
         return outputs[0];
     }
     let filterOutputs = outputs[0];
-    
+
     settings.forEach(element => {
         switch (element.key) {
-            case "campaigns_per_user":
+            case "outputs_per_user":
                 filterOutputs = outputs[0].slice(0, element.value);
                 break;
         }
