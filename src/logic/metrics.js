@@ -1,19 +1,19 @@
 async function getMetrics(metrics, userData) {
-    let m = [];
+    let data =  {
+
+    };
 
     if (!metrics || metrics.length == 0) {
-        return m;
+        return data;
     }
 
     await Promise.all(
         metrics.map(async metric => {
-            let data = {};
             data[metric.key] = userData[metric.key];
-            m.push(data);
         })
     );
 
-    return m;
+    return data;
 }
 
 module.exports = { getMetrics }
