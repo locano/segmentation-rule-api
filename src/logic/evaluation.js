@@ -70,7 +70,7 @@ async function getResultData(results) {
             localParams = [params];
             await Promise.all(
                 localParams.map(async (file) => {
-                    s3.putObject(file, function (err, data) {
+                    await s3.putObject(file, function (err, data) {
                         if (err) console.log(err, err.stack); // an error occurred
                         else console.log("Put to s3 should have worked: " + data);           // successful response
                     }).promise()

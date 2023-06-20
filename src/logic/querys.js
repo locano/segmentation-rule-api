@@ -46,4 +46,58 @@ function getQuery(condition, userData = {}) {
     }
 }
 
-module.exports = { getQuery }
+function getQueryDynamo(condition, userData = {}) {
+    let upper = 0;
+    let lower = 0;
+    let value = '';
+    if (condition.operator == 'BETWEEN') {
+        let values = condition.value.split(',');
+        upper = getCorrectValueType(values[1], condition.valueType);
+        lower = getCorrectValueType(values[0], condition.valueType);
+    } else {
+        value = getValue(condition.source, condition.value, condition.valueType, userData);
+    }
+
+    if (condition.valueType == "BOOLEAN") {
+        value = value == true ? "true" : "false";
+    }
+
+    let queryValue = condition.valueType == "STRING" ? `${value}` : value;
+
+
+    switch (condition.operator) {
+        case "BETWEEN":
+            return `${lower} AND ${upper}`;
+        default:
+            return queryValue;
+    }
+}
+
+function getOperatorDynamo(operator) {
+    switch (operator) {
+        case "EQUALS":
+        case "==":
+            return `=`;
+        case "NOT_EQUALS":
+        case "!=":
+            return `<>`;
+        case "GREATER_THAN":
+        case ">":
+            return `>`;
+        case "LESS_THAN":
+        case "<":
+            return `<`;
+        case "GREATER_THAN_OR_EQUAL":
+        case ">=":
+            return `>=`;
+        case "LESS_THAN_OR_EQUAL":
+        case "<=":
+            return `<=`;
+        case "BETWEEN":
+            return `BETWEEN`;
+        default:
+            return `=`;
+    }
+}
+
+module.exports = { getQuery, getQueryDynamo ,getOperatorDynamo}

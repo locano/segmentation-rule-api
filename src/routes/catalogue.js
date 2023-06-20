@@ -11,6 +11,43 @@ const csvToJson = require("csvtojson");
 const User = require("../models/userData/user");
 const Variable = require("../models/catalogues/variable");
 const Setting = require("../models/catalogues/setting");
+const { getProducts } = require("../logic/outputs");
+
+// Getting Outputs
+router.get("/catalogue/products", async (req, res) => {
+  try {
+    let contidions = [
+      [
+        {
+          "field": "variant",
+          "valueType": "STRING",
+          "id": "800921eb-c745-403a-87ed-a46c062245ff",
+          "source": "DEFAULT",
+          "fieldType": "Prepago",
+          "value": "upsell_2x_loyalty",
+          "operator": "=="
+        },
+        {
+          "field": "display_price",
+          "valueType": "NUMBER",
+          "id": "20b41e97-e6fd-4fc3-9c4b-97eb583d657d",
+          "source": "CUSTOMER_PROFILE",
+          "fieldType": "Prepago",
+          "value": "recharge_mode_1m",
+          "operator": ">"
+        }
+      ]
+    ];
+    let outputs = await getProducts("srProductCatalogue", contidions);
+    if (!outputs || outputs.error) {
+      return res.status(404).send();
+    }
+    res.status(200).send(outputs);
+  } catch (e) {
+    res.status(500).send();
+  }
+})
+
 
 // Getting Outputs
 router.get("/catalogue/outputs", async (req, res) => {
