@@ -1,6 +1,6 @@
 const express = require("express");
 const { evaluateSRE } = require("../logic/evaluation");
-const { getUserSegment } = require("../logic/segments");
+const { getUserSegment, getUserFromBucket } = require("../logic/segments");
 const { getMetrics } = require("../logic/metrics");
 const { checkSettings } = require("../logic/settings");
 const router = new express.Router();
@@ -9,9 +9,9 @@ router.post("/tree/evaluateUsers", async (req, res) => {
     try {
         let tree = req.body.tree;
         let variables = req.body.variables;
-        let users = req.body.users;
-        // Evaluar un segmento de usuarios y extraer outputs
-        let results = await evaluateSRE(tree, variables, users);
+        let path = req.body.path ? req.body.path : null;
+        let userSegment = await getUserFromBucket(path);
+        let results = await evaluateSRE(tree, variables, userSegment);
         res.status(200).send(results);
     } catch (e) {
         res.status(500).send();

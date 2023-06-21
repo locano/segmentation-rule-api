@@ -19,7 +19,7 @@ async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
         await Promise.all(
             filterUsers.map(async (userInfo, index) => {
                 // Globbbal data/Context
-                let userData = userInfo._doc
+                let userData = userInfo
                 let result = await evaluateNodes(tree.nodes, userData);
                 let user = userInfo.msisdn;
                 let resultOutputs = result.outputs;
