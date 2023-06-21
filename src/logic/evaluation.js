@@ -58,36 +58,37 @@ async function getResultData(results) {
     const megaBytes = getMegabitesSize(results);
 
     try {
-        if (megaBytes > 4) {
-            var s3 = new AWS.S3();
-            let filename = `result_${(new Date().toJSON())}.json`
-            var params = {
-                Bucket: "amplify-segmentationruleapi-dev-165448-deployment/tempData",
-                Key: filename,
-                Body: JSON.stringify(results),
-                Expires: 60 * 60
-            }
-            localParams = [params];
-            await Promise.all(
-                localParams.map(async (file) => {
-                    await s3.putObject(file, function (err, data) {
-                        if (err) console.log(err, err.stack); // an error occurred
-                        else console.log("Put to s3 should have worked: " + data);           // successful response
-                    }).promise()
-                })
-            );
+        var s3 = new AWS.S3();
+        let filename = `result_${(new Date().toJSON())}.json`
+        var params = {
+            Bucket: "amplify-segmentationruleapi-dev-84649-deployment/evaluation-results",
+            Key: filename,
+            Body: JSON.stringify(results),
+            Expires: 60 * 60
+        }
+        localParams = [params];
+        await Promise.all(
+            localParams.map(async (file) => {
+                await s3.putObject(file, function (err, data) {
+                    if (err) console.log(err, err.stack); // an error occurred
+                    else console.log("Put to s3 should have worked: " + data);           // successful response
+                }).promise()
+            })
+        );
 
+        if (megaBytes > 4) {
             return {
                 results: results.slice(0, 200),
                 message: "Data size is greater than 4MB and has been saved in S3, you can see a preview in the results",
                 stored: true,
-                link: `https://amplify-segmentationruleapi-dev-165448-deployment.s3.amazonaws.com/tempData/${filename}`
+                link: `https://amplify-segmentationruleapi-dev-84649-deployment/evaluation-results/${filename}`
             }
         } else {
             return {
                 results: results,
                 message: "Data size is less than 4MB you can see the results",
-                stored: false
+                stored: true,
+                link: `https://amplify-segmentationruleapi-dev-84649-deployment/evaluation-results/${filename}`
             };
         }
     } catch (error) {

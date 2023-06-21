@@ -55,7 +55,7 @@ async function getProducts(tableName, productType, conditions, limitOutputs, use
     let exp2 = buildExpressionAttributeValues(conditions);
     let exp3 = buildExpressionAttributeNames(conditions);
 
-    exp1 = exp1 + " AND #type = :type"
+    exp1 = "#type = :type AND " + exp1
     exp2[":type"] = productType
     exp3["#type"] = "type"
 
