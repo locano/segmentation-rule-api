@@ -46,21 +46,7 @@ async function getUserFromBucket(path) {
             Bucket: bucket, // your bucket name,
             Key: key // path to the object you're looking for
         }
-        let stream = s3.getObject(getParams).createReadStream()
-        // .on('error', (err) => reject(err))
-        // .on('end', () => resolve());;
-
-        // let stream = await new Promise((resolve, reject) => {
-        //     const params = {
-        //         Bucket: bucket, // your bucket name,
-        //         Key: key // path to the object you're looking for
-        //     }
-        //     s3.getObject(params)
-        //         .createReadStream()
-        //         .on('error', (err) => reject(err))
-        //         .on('end', () => resolve());
-        // });
-
+        let stream = s3.getObject(getParams).createReadStream();
         const json = await csv().fromStream(stream);
         // console.log(json);
         return json;

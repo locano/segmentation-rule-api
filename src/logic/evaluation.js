@@ -19,6 +19,45 @@ async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
         await Promise.all(
             filterUsers.map(async (userInfo, index) => {
                 // Globbbal data/Context
+                let userData = userInfo._doc;
+                let result = await evaluateNodes(tree.nodes, userData);
+                let user = userInfo.msisdn;
+                let resultOutputs = result.outputs;
+                let metrics = await getMetrics(treeMetrics, userData);
+                if (resultOutputs.length > 0) {
+                    let outputs = await checkSettings(resultOutputs, settings);
+                    results.push({ user, outputs, metrics });
+                } else {
+                    if (no_outputs && no_outputs.value == true) {
+                        let outputs = [];
+                        results.push({ user, outputs, metrics });
+                    }
+                }
+
+            })
+        );
+    }
+
+    //suffle results
+    results.sort(() => Math.random() - 0.5);
+
+    let dataResult = await getResultData(results);
+
+    return dataResult;
+}
+
+async function evaluateSRESF(tree, contextVariables = {}, filterUsers) {
+    let results = [];
+    settings = tree.settings;
+    // No outputs
+    let no_outputs = settings.find(element => element.key == "no_outputs");
+    let treeMetrics = tree.metrics;
+    variables = JSON.parse(contextVariables) || {};
+
+    if (filterUsers.length > 0) {
+        await Promise.all(
+            filterUsers.map(async (userInfo, index) => {
+                // Globbbal data/Context
                 let userData = userInfo
                 let result = await evaluateNodes(tree.nodes, userData);
                 let user = userInfo.msisdn;
@@ -150,4 +189,4 @@ async function evaluateNodes(nodes, userData, exclusive = false) {
 
 
 
-module.exports = { evaluateSRE };
+module.exports = { evaluateSRE, evaluateSRESF };
