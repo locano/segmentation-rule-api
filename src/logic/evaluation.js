@@ -41,7 +41,7 @@ async function evaluateSRE(tree, contextVariables = {}, filterUsers) {
     //suffle results
     results.sort(() => Math.random() - 0.5);
 
-    let dataResult = await getResultData(results);
+    let dataResult = await getResultData(results, tree.name);
 
     return dataResult;
 }
@@ -93,12 +93,12 @@ function getMegabitesSize(data) {
     return megaBytes;
 }
 
-async function getResultData(results) {
+async function getResultData(results, name) {
     const megaBytes = getMegabitesSize(results);
 
     try {
         var s3 = new AWS.S3();
-        let filename = `result_${(new Date().toJSON())}.json`
+        let filename = `${name.replace(' ','_')}_${(new Date().toJSON())}.json`
         var params = {
             Bucket: "amplify-segmentationruleapi-dev-84649-deployment/evaluation-results",
             Key: filename,
@@ -115,7 +115,7 @@ async function getResultData(results) {
             })
         );
 
-        if (megaBytes > 4) {
+        if (megaBytes > 5) {
             return {
                 results: results.slice(0, 200),
                 message: "Data size is greater than 4MB and has been saved in S3, you can see a preview in the results",
