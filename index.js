@@ -6,9 +6,9 @@ const cors = require("cors");
 const connectDB = require("./src/db/mongoose");
 
 // Adding Routes
-const catalogueRouter = require("./src/routes/catalogue");
+// const catalogueRouter = require("./src/routes/catalogue");
+// const informationRouter = require("./src/routes/information");
 const treeRouter = require("./src/routes/tree");
-const informationRouter = require("./src/routes/information");
 
 // Middlewares
 const send404 = require("./src/middleware/error404");
@@ -37,9 +37,9 @@ app.get("/", (req, res) => {
   res.send("API its working");
 });
 
-app.use(catalogueRouter);
+// app.use(catalogueRouter);
+// app.use(informationRouter);
 app.use(treeRouter);
-app.use(informationRouter);
 app.use(send404);
 app.use(catchAllErrors);
 

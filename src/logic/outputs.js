@@ -74,6 +74,36 @@ async function getProducts(tableName, productType, conditions, limitOutputs, use
     }
 }
 
+async function evaluateOutput(outputs, userData) {
+    let results = [];
+
+    if (outputs.length == 0) {
+        return results;
+    }
+
+    await Promise.all(
+        outputs.map(async output => {
+            let limit = output.limit;
+            let priority = output.priority;
+            // let resultOut = await getOutputs(output, limit, userData)
+            let resultOut = await getProducts('srProductCatalogue', output.catalogue, output.conditions, limit, userData)
+            if (resultOut && resultOut.length > 0) {
+                // let dataOutput = resultOut.map(o => { return o._doc });
+                results.push({ resultOut, priority });
+            }
+        })
+    );
+    // order by priority
+    results.sort((a, b) => (a.priority > b.priority) ? 1 : -1)
+    // remove key priority
+    results = results.map(r => { return r.resultOut });
+
+    // random results
+    results = results.sort(() => Math.random() - 0.5);
+
+    return results;
+}
+
 async function getOutputs(node, limitOutputs, userData) {
     let querys = [];
     let query = '{}';
@@ -108,34 +138,6 @@ async function getOutputs(node, limitOutputs, userData) {
     return products;
 }
 
-async function evaluateOutput(outputs, userData) {
-    let results = [];
 
-    if (outputs.length == 0) {
-        return results;
-    }
-
-    await Promise.all(
-        outputs.map(async output => {
-            let limit = output.limit;
-            let priority = output.priority;
-            // let resultOut = await getOutputs(output, limit, userData)
-            let resultOut = await getProducts('srProductCatalogue', output.catalogue, output.conditions, limit, userData)
-            if (resultOut && resultOut.length > 0) {
-                // let dataOutput = resultOut.map(o => { return o._doc });
-                results.push({ resultOut, priority });
-            }
-        })
-    );
-    // order by priority
-    results.sort((a, b) => (a.priority > b.priority) ? 1 : -1)
-    // remove key priority
-    results = results.map(r => { return r.resultOut });
-
-    // random results
-    results = results.sort(() => Math.random() - 0.5);
-
-    return results;
-}
 
 module.exports = { evaluateOutput, getOutputs, getProducts }

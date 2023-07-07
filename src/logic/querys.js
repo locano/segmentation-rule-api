@@ -1,4 +1,4 @@
-const { getValue } = require("./conditions");
+const { getValue, getCorrectValueType } = require("./conditions");
 
 function getQuery(condition, userData = {}) {
     let upper = 0;
@@ -100,4 +100,4 @@ function getOperatorDynamo(operator) {
     }
 }
 
-module.exports = { getQuery, getQueryDynamo ,getOperatorDynamo}
+module.exports = { getQuery, getQueryDynamo, getOperatorDynamo }
