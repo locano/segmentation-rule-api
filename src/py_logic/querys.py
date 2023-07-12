@@ -1,3 +1,4 @@
+from conditions import *
 def get_query_dynamo(condition, user_data={}):
     upper = 0
     lower = 0

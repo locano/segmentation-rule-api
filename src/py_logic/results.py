@@ -1,3 +1,6 @@
+import boto3
+import json
+import time
 def get_megabytes_size(data):
     json_string = json.dumps(data)
     size = len(json_string.encode())
@@ -5,19 +8,26 @@ def get_megabytes_size(data):
     mega_bytes = kilo_bytes / 1024
     return mega_bytes
 
-async def get_result_data(results, name):
+def get_result_data(results, name):
     mega_bytes = get_megabytes_size(results)
 
     try:
         s3 = boto3.client('s3')
         filename = f"{name.replace(' ', '_')}_{int(time.time())}.json"
+        data_dump = json.dumps(results)
         params = {
-            'Bucket': 'amplify-segmentationruleapi-dev-84649-deployment/evaluation-results',
-            'Key': filename,
-            'Body': json.dumps(results),
-            'Expires': 60 * 60
+            'Bucket': 'amplify-segmentationruleapi-dev-113856-deployment',
+            'Key': 'evaluation-results/'+filename,
+            'Body': data_dump
         }
-        await s3.put_object(**params)
+        result = s3.put_object(**params)
+
+        res = result.get('ResponseMetadata')
+
+        if res.get('HTTPStatusCode') == 200:
+            print('File Uploaded Successfully')
+        else:
+            print('File Not Uploaded')
 
         if mega_bytes > 5:
             return {

@@ -1,3 +1,9 @@
+import boto3
+from boto3.dynamodb.types import TypeDeserializer
+import random
+from querys import *
+
+serializer = boto3.dynamodb.types.TypeSerializer()
 def build_expression_attribute_values(conditions, user_data):
     attribute_values = {}
 
@@ -38,31 +44,32 @@ def build_expression_attribute_names(conditions):
 
     return attribute_names
 
-async def get_products(table_name, product_type, conditions, limit_outputs, user_data):
+def get_products(table_name, product_type, conditions, limit_outputs, user_data):
     dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 
     exp1 = build_filter_expression(conditions)
     exp2 = build_expression_attribute_values(conditions, user_data)
     exp3 = build_expression_attribute_names(conditions)
 
-    exp1 = f"#type = :type AND {exp1}"
-    exp2[':type'] = product_type
-    exp3['#type'] = 'type'
+    exp1 = f"#output_category = :output_category AND {exp1}"
+    exp2[':output_category'] = product_type
+    des_exp2 = {k: serializer.serialize(v) for k,v in exp2.items()}
+    exp3['#output_category'] = 'output_category'
 
     params = {
         'TableName': table_name,
         'FilterExpression': exp1,
-        'ExpressionAttributeValues': exp2,
+        'ExpressionAttributeValues': des_exp2,
         'ExpressionAttributeNames': exp3
     }
 
     try:
-        response = await dynamodb.scan(**params)
+        response = dynamodb.scan(**params)
         return response['Items']
     except Exception as err:
         return {'error': str(err), 'products': []}
 
-async def evaluate_output(outputs, user_data):
+def evaluate_output(outputs, user_data):
     results = []
 
     if len(outputs) == 0:
@@ -71,7 +78,7 @@ async def evaluate_output(outputs, user_data):
     for output in outputs:
         limit = output['limit']
         priority = output['priority']
-        result_out = await get_products('srProductCatalogue', output['catalogue'], output['conditions'], limit, user_data)
+        result_out = get_products('segmentation-engine-config-output-catalogues', output['catalogue'], output['conditions'], limit, user_data)
         if result_out and len(result_out) > 0:
             results.append({'resultOut': result_out, 'priority': priority})
 
