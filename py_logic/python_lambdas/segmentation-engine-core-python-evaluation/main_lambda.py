@@ -7,8 +7,9 @@ from evaluation import *
 from segments import *
 
 def lambda_handler(event, context):
-
+    print(event)
     users = get_user_from_bucket(event["path"])
+    print("users", len(users))
     evaluate_sresf(event["tree"],event["variables"],users) 
     # TODO implement
     return {

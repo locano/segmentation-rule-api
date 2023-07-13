@@ -1,6 +1,6 @@
 import math
 from decimal import *
-variables_conditions = []
+variables = []
 
 def get_correct_value_type(value, value_type):
     if value_type == 'BOOLEAN':
@@ -21,7 +21,7 @@ def get_value(field_type, field, value_type, user_data = {}):
     if field_type == 'CUSTOMER_PROFILE':
         return get_correct_value_type(user_data[field], value_type)
     elif field_type == 'CONTEXT_VARIABLE':
-        return get_correct_value_type(variables_conditions[field], value_type)
+        return get_correct_value_type(variables[field], value_type)
     else:
         return get_correct_value_type(field, value_type)
 
@@ -59,8 +59,8 @@ def evaluate(condition, user_data = {}):
         return False
 
 def evaluate_conditions(condition_groups, user_data, _variables):
-    global variables_conditions
-    variables_conditions = _variables
+    global variables
+    variables = _variables
 
     print(condition_groups)
     print(len(condition_groups))

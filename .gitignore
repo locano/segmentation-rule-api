@@ -21,4 +21,5 @@ amplify-gradle-config.json
 amplifytools.xcconfig
 .secret-*
 **.sample
+src/py_logic/__pycache__
 #amplify-do-not-edit-end

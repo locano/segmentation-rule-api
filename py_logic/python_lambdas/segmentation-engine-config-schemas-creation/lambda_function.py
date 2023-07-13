@@ -53,7 +53,7 @@ def describe_feature_groups(fgs_list):
                     'description': {'S': description},
                     'table_name': {'S': table_name},
                     'definition': {'L': glue_columns_des},
-                    'database': {'BOOL': is_base}
+                    'is_base': {'BOOL': is_base}
                 }
             )
     else:
@@ -83,7 +83,3 @@ def lambda_handler(event, context):
     
     except Exception as e:
         print(e)
-
-
-
-
